@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Blocked | V Style</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0d1b2a;
+            font-family: 'Courier New', monospace;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .blocked-container {
+            text-align: center;
+            padding: 30px;
+            border: 1px solid #ff5555;
+            border-radius: 5px;
+            max-width: 500px;
+            box-shadow: 0 0 20px #ff5555;
+        }
+        
+        h1 {
+            color: #ff5555;
+            text-shadow: 0 0 10px #ff5555;
+        }
+        
+        .countdown {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        
+        #unlock-time {
+            font-weight: bold;
+            color: #00a8ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="blocked-container">
+        <h1>ACCESS BLOCKED</h1>
+        <p>Too many failed login attempts.</p>
+        <p>You will be able to try again in:</p>
+        <div class="countdown" id="countdown"></div>
+        <p>Please try again later.</p>
+    </div>
+
+    <script type="module">
+        import { getVisitorData } from './admin/visitor-data.js';
+        
+        const visitorId = localStorage.getItem('visitorId');
+        const visitors = getVisitorData();
+        const visitor = visitors.find(v => v.visitorId === visitorId);
+        
+        if (visitor && visitor.blockedUntil) {
+            const unlockTime = new Date(visitor.blockedUntil);
+            
+            function updateCountdown() {
+                const now = new Date();
+                const diff = unlockTime - now;
+                
+                if (diff <= 0) {
+                    document.getElementById('countdown').textContent = "Now!";
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                    return;
+                }
+                
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                document.getElementById('countdown').textContent = 
+                    `${hours}h ${minutes}m ${seconds}s`;
+                
+                setTimeout(updateCountdown, 1000);
+            }
+            
+            updateCountdown();
+        } else {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
