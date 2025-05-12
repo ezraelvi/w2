@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | V Style</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #0d1b2a;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #00a8ff;
+            text-shadow: 0 0 10px #00a8ff;
+        }
+        
+        .visitor-card {
+            background: rgba(13, 27, 42, 0.8);
+            border: 1px solid #00a8ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 10px #00a8ff;
+        }
+        
+        .visitor-id {
+            color: #00a8ff;
+            font-weight: bold;
+        }
+        
+        .blocked {
+            color: #ff5555;
+            font-weight: bold;
+        }
+        
+        .message {
+            background: rgba(0, 168, 255, 0.1);
+            border-left: 3px solid #00a8ff;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        
+        .timestamp {
+            font-size: 0.8em;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Visitor Dashboard</h1>
+    <div id="visitors-container"></div>
+
+    <script type="module">
+        import { getVisitorData } from './visitor-data.js';
+        
+        const visitors = getVisitorData();
+        const container = document.getElementById('visitors-container');
+        
+        visitors.forEach(visitor => {
+            const card = document.createElement('div');
+            card.className = 'visitor-card';
+            
+            let status = '';
+            if (visitor.blockedUntil && new Date(visitor.blockedUntil) > new Date()) {
+                status = `<span class="blocked">BLOCKED until ${new Date(visitor.blockedUntil).toLocaleString()}</span>`;
+            }
+            
+            let messages = '';
+            if (visitor.messages && visitor.messages.length > 0) {
+                messages = '<h3>Messages:</h3>' + 
+                    visitor.messages.map(msg => `
+                        <div class="message">
+                            <p>${msg.message}</p>
+                            <p class="timestamp">${new Date(msg.timestamp).toLocaleString()}</p>
+                        </div>
+                    `).join('');
+            }
+            
+            card.innerHTML = `
+                <h2 class="visitor-id">${visitor.visitorId}</h2>
+                <p>First access: ${new Date(visitor.firstAccess).toLocaleString()}</p>
+                <p>Last access: ${new Date(visitor.lastAccess).toLocaleString()}</p>
+                <p>Access count: ${visitor.accessCount}</p>
+                <p>Failed attempts: ${visitor.failedAttempts || 0}</p>
+                ${status}
+                ${messages}
+                <hr>
+                <h3>Browser Info:</h3>
+                <p><small>${visitor.userAgent}</small></p>
+            `;
+            
+            container.appendChild(card);
+        });
+    </script>
+</body>
+</html>
